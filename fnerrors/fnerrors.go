@@ -44,6 +44,21 @@ func New(status int, msg string, opts ...Option) error {
 	return e
 }
 
+// NewBadRequest returns a new bad request error.
+func NewBadRequest(msg string, err error, opts ...Option) error {
+	if err != nil {
+		msg = fmt.Sprintf("%s: %v", msg, err)
+	}
+	e := &Error{
+		status: http.StatusBadRequest,
+		msg:    msg,
+	}
+	for _, opt := range opts {
+		opt(e)
+	}
+	return e
+}
+
 func (e *Error) Error() string {
 	return e.msg
 }

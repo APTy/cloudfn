@@ -51,7 +51,7 @@ func NewBadRequest(msg string, err error, opts ...Option) error {
 
 // NewNotFound returns a new not found error.
 func NewNotFound(msg string, err error, opts ...Option) error {
-	return newHTTP(http.StatusBadRequest, msg, err, opts...)
+	return newHTTP(http.StatusNotFound, msg, err, opts...)
 }
 
 func newHTTP(status int, msg string, err error, opts ...Option) error {

@@ -32,12 +32,14 @@ func WriteRes(w http.ResponseWriter, res interface{}, err error) {
 
 // WriteErr writes an fnerror with the correct status code.
 func WriteErr(w http.ResponseWriter, err error) {
+	msg := err.Error()
 	status := http.StatusInternalServerError
 	if err, ok := err.(*fnerrors.Error); ok {
 		status = err.HTTPStatus()
+		msg = err.JSONResponse()
 	}
 	w.WriteHeader(status)
-	fmt.Fprintf(w, "%v\n", err)
+	fmt.Fprintf(w, "%v\n", msg)
 }
 
 // GetPostData gets the POST data from the body.

@@ -46,11 +46,20 @@ func New(status int, msg string, opts ...Option) error {
 
 // NewBadRequest returns a new bad request error.
 func NewBadRequest(msg string, err error, opts ...Option) error {
+	return newHTTP(http.StatusBadRequest, msg, err, opts...)
+}
+
+// NewNotFound returns a new not found error.
+func NewNotFound(msg string, err error, opts ...Option) error {
+	return newHTTP(http.StatusBadRequest, msg, err, opts...)
+}
+
+func newHTTP(status int, msg string, err error, opts ...Option) error {
 	if err != nil {
 		msg = fmt.Sprintf("%s: %v", msg, err)
 	}
 	e := &Error{
-		status: http.StatusBadRequest,
+		status: status,
 		msg:    msg,
 	}
 	for _, opt := range opts {

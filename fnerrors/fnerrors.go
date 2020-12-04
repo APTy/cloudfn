@@ -1,6 +1,7 @@
 package fnerrors
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -52,6 +53,16 @@ func (e *Error) HTTPStatus() int {
 	return e.status
 }
 
+// JSONResponse returns the JSON response for the error.
+func (e *Error) JSONResponse() string {
+	res := HTTPResponse{Error: HTTPError{Message: e.msg}}
+	b, err := json.Marshal(res)
+	if err != nil {
+		return e.msg
+	}
+	return string(b)
+}
+
 // Detail returns the detail for the error.
 func (e *Error) Detail() string {
 	return e.detail
@@ -71,4 +82,14 @@ func GetDetail(err error) string {
 		return err.Detail()
 	}
 	return ""
+}
+
+// HTTPResponse is a response.
+type HTTPResponse struct {
+	Error HTTPError `json:"error"`
+}
+
+// HTTPError includes error data.
+type HTTPError struct {
+	Message string `json:"message"`
 }

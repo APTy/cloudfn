@@ -97,7 +97,7 @@ func Wrap(msg string, err error) error {
 	if err, ok := err.(*Error); ok {
 		return New(err.status, fmt.Sprintf("%s: %v", msg, err))
 	}
-	return fmt.Errorf("%s: %v", msg, err)
+	return New(http.StatusServiceUnavailable, fmt.Sprintf("%s: %v", msg, err))
 }
 
 // GetDetail returns the detail of the error.

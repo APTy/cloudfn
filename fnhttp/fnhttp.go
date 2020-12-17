@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/APTy/cloudfn/fnerrors"
 )
@@ -63,6 +64,11 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// GetPathID returns an id from the path of form "/foo/<id>"
+func GetPathID(r *http.Request) string {
+	return strings.TrimPrefix(r.URL.Path, "/")
 }
 
 // HandleOptionsRequestAndCORS responds with CORS headers to OPTIONS requests, and sets the appropriate headers otherwise.

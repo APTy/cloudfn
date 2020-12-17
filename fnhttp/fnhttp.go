@@ -2,6 +2,7 @@ package fnhttp
 
 import (
 	"context"
+	"encoding"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -22,7 +23,13 @@ func WriteRes(w http.ResponseWriter, res interface{}, err error) {
 		WriteErr(w, err)
 		return
 	}
-	b, err := json.Marshal(res)
+
+	var b []byte
+	if marshaler, ok := res.(encoding.BinaryMarshaler); ok {
+		b, err = marshaler.MarshalBinary()
+	} else {
+		b, err = json.Marshal(res)
+	}
 	if err != nil {
 		WriteErr(w, err)
 		return

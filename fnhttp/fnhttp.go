@@ -55,13 +55,13 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	defer r.Body.Close()
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return err
+		return fnerrors.NewBadRequest("read body", err)
 	}
 	if len(b) == 0 {
 		return nil
 	}
 	if err := json.Unmarshal(b, ifcPtr); err != nil {
-		return err
+		return fnerrors.NewBadRequest("json decode", err)
 	}
 	return nil
 }

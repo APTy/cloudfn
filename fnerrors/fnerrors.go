@@ -54,6 +54,11 @@ func NewNotFound(msg string, err error, opts ...Option) error {
 	return newHTTP(http.StatusNotFound, msg, err, opts...)
 }
 
+// NewUnauthorized returns a new unauthorized error.
+func NewUnauthorized(msg string, err error, opts ...Option) error {
+	return newHTTP(http.StatusUnauthorized, msg, err, opts...)
+}
+
 func newHTTP(status int, msg string, err error, opts ...Option) error {
 	if err != nil {
 		msg = fmt.Sprintf("%s: %v", msg, err)

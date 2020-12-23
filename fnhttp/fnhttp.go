@@ -52,8 +52,12 @@ func WriteErr(w http.ResponseWriter, err error) {
 
 // GetPostData gets the POST data from the body.
 func GetPostData(r *http.Request, ifcPtr interface{}) error {
-	defer r.Body.Close()
-	b, err := ioutil.ReadAll(r.Body)
+	body, err := r.GetBody()
+	if err != nil {
+		return fnerrors.NewBadRequest("get body", err)
+	}
+	defer body.Close()
+	b, err := ioutil.ReadAll(body)
 	if err != nil {
 		return fnerrors.NewBadRequest("read body", err)
 	}

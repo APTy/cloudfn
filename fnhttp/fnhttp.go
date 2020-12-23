@@ -1,6 +1,7 @@
 package fnhttp
 
 import (
+	"bytes"
 	"context"
 	"encoding"
 	"encoding/json"
@@ -52,10 +53,7 @@ func WriteErr(w http.ResponseWriter, err error) {
 
 // GetPostData gets the POST data from the body.
 func GetPostData(r *http.Request, ifcPtr interface{}) error {
-	body, err := r.GetBody()
-	if err != nil {
-		return fnerrors.NewBadRequest("get body", err)
-	}
+	body := r.Body
 	defer body.Close()
 	b, err := ioutil.ReadAll(body)
 	if err != nil {
@@ -64,6 +62,10 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	if len(b) == 0 {
 		return nil
 	}
+
+	// copy bytes back to the request so it can be read again later
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+
 	if err := json.Unmarshal(b, ifcPtr); err != nil {
 		return fnerrors.NewBadRequest("json decode", err)
 	}

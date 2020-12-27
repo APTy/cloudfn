@@ -13,6 +13,52 @@ import (
 	"github.com/APTy/cloudfn/fnerrors"
 )
 
+// FnHttper performs cloud function http duties.
+type FnHttper struct {
+	// CORSOrigins is a list of allowed origin domains for CORS headers.
+	CORSOrigins []string
+	corsOrigins map[string]struct{}
+}
+
+// CORSMiddleware is middleware that handles CORS requests.
+func (fn *FnHttper) CORSMiddleware(w http.ResponseWriter, r *http.Request) bool {
+	if len(fn.CORSOrigins) == 0 {
+		panic("fnhttp: missing allowed cors origins")
+	}
+	// default to first origin in the list
+	origin := fn.CORSOrigins[0]
+
+	// construct map for faster lookups
+	if fn.corsOrigins == nil {
+		fn.corsOrigins = make(map[string]struct{})
+		for _, origin := range fn.CORSOrigins {
+			fn.corsOrigins[origin] = struct{}{}
+		}
+	}
+
+	// use the origin if it's in our list of allowed origins
+	if _, ok := fn.corsOrigins[r.Header.Get("Origin")]; ok {
+		origin = r.Header.Get("Origin")
+	}
+
+	// Set CORS headers for the preflight request
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Max-Age", "3600")
+		w.Header().Set("Vary", "Origin")
+		w.WriteHeader(http.StatusNoContent)
+		return true
+	}
+	// Set CORS headers for the main request.
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Vary", "Origin")
+	return false
+}
+
 // NewCtx returns the context of the request.
 func NewCtx(r *http.Request) context.Context {
 	// TODO(tyler): add support for extracting auth headers.

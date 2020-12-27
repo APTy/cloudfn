@@ -31,14 +31,19 @@ func (fn *FnHttper) CORSMiddleware(w http.ResponseWriter, r *http.Request) bool 
 	// construct map for faster lookups
 	if fn.corsOrigins == nil {
 		fn.corsOrigins = make(map[string]struct{})
-		for _, origin := range fn.CORSOrigins {
-			fn.corsOrigins[origin] = struct{}{}
-		}
 	}
 
 	// use the origin if it's in our list of allowed origins
 	if _, ok := fn.corsOrigins[r.Header.Get("Origin")]; ok {
 		origin = r.Header.Get("Origin")
+	}
+
+	// look through the cors origins list, and add it to the map if we find it
+	for _, allowedOrigin := range fn.CORSOrigins {
+		if strings.Contains(r.Header.Get("Origin"), allowedOrigin) {
+			origin = r.Header.Get("Origin")
+			fn.corsOrigins[origin] = struct{}{}
+		}
 	}
 
 	// Set CORS headers for the preflight request

@@ -46,21 +46,20 @@ func (fn *FnHttper) CORSMiddleware(w http.ResponseWriter, r *http.Request) bool 
 		}
 	}
 
-	// Set CORS headers for the preflight request
+	// Set CORS headers
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Max-Age", "3600")
+	w.Header().Set("Vary", "Origin")
+
+	// Return early for the preflight request
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "*")
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Max-Age", "3600")
-		w.Header().Set("Vary", "Origin")
 		w.WriteHeader(http.StatusNoContent)
 		return true
 	}
-	// Set CORS headers for the main request.
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Vary", "Origin")
+
 	return false
 }
 

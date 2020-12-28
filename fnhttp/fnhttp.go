@@ -49,7 +49,7 @@ func (fn *FnHttper) CORSMiddleware(w http.ResponseWriter, r *http.Request) bool 
 	// Set CORS headers
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Access-Control-Max-Age", "3600")
 	w.Header().Set("Vary", "Origin")

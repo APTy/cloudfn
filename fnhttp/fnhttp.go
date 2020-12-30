@@ -119,10 +119,6 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 		return fnerrors.NewBadRequest("read body", err)
 	}
 
-	if err := checkRequiredFields(ifcPtr); err != nil {
-		return fnerrors.NewBadRequest("bad request", err)
-	}
-
 	if len(b) == 0 {
 		return fnerrors.NewBadRequest("bad request", errors.New("missing http body"))
 	}
@@ -132,6 +128,10 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 
 	if err := json.Unmarshal(b, ifcPtr); err != nil {
 		return fnerrors.NewBadRequest("json decode", err)
+	}
+
+	if err := checkRequiredFields(ifcPtr); err != nil {
+		return fnerrors.NewBadRequest("bad request", err)
 	}
 
 	return nil

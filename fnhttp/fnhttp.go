@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -117,8 +118,13 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	if err != nil {
 		return fnerrors.NewBadRequest("read body", err)
 	}
+
+	if err := checkRequiredFields(ifcPtr); err != nil {
+		return fnerrors.NewBadRequest("bad request", err)
+	}
+
 	if len(b) == 0 {
-		return nil
+		return fnerrors.NewBadRequest("bad request", errors.New("missing http body"))
 	}
 
 	// copy bytes back to the request so it can be read again later
@@ -126,10 +132,6 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 
 	if err := json.Unmarshal(b, ifcPtr); err != nil {
 		return fnerrors.NewBadRequest("json decode", err)
-	}
-
-	if err := checkRequiredFields(ifcPtr); err != nil {
-		return fnerrors.NewBadRequest("bad request", err)
 	}
 
 	return nil

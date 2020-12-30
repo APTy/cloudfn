@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/APTy/cloudfn/fnerrors"
@@ -102,6 +103,13 @@ func WriteErr(w http.ResponseWriter, err error) {
 }
 
 // GetPostData gets the POST data from the body.
+//
+// This function returns an error if any required fields are missing.
+// Fields can be marked as missing by using the "cloudfn" tag, e.g.
+//
+//     type CreateCampaignReq struct {
+//         Campaign *entity.Campaign `json:"campaign" cloudfn:"required"`
+//     }
 func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	body := r.Body
 	defer body.Close()
@@ -119,6 +127,11 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	if err := json.Unmarshal(b, ifcPtr); err != nil {
 		return fnerrors.NewBadRequest("json decode", err)
 	}
+
+	if err := checkRequiredFields(ifcPtr); err != nil {
+		return fnerrors.NewBadRequest("bad request", err)
+	}
+
 	return nil
 }
 
@@ -143,4 +156,23 @@ func HandleOptionsRequestAndCORS(w http.ResponseWriter, r *http.Request) bool {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	return false
+}
+
+func checkRequiredFields(req interface{}) error {
+	fields := reflect.ValueOf(req).Elem()
+
+	for i := 0; i < fields.NumField(); i++ {
+		cloudfnTags := fields.Type().Field(i).Tag.Get("cloudfn")
+		jsonTags := fields.Type().Field(i).Tag.Get("json")
+
+		if strings.Contains(cloudfnTags, "required") && fields.Field(i).IsZero() {
+			name := fields.Type().Field(i).Name
+			if jsonTags != "" {
+				name = strings.Split(jsonTags, ",")[0]
+			}
+			return fmt.Errorf("missing required field: %q", name)
+		}
+	}
+
+	return nil
 }

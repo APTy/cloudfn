@@ -126,8 +126,15 @@ func GetPostData(r *http.Request, ifcPtr interface{}) error {
 	// copy bytes back to the request so it can be read again later
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
-	if err := json.Unmarshal(b, ifcPtr); err != nil {
-		return fnerrors.NewBadRequest("json decode", err)
+	// unmarshal using the method if possible, fall back to json
+	if unmarshaller, ok := ifcPtr.(encoding.BinaryUnmarshaler); ok {
+		if err := unmarshaller.UnmarshalBinary(b); err != nil {
+			return fnerrors.NewBadRequest("binary unmarshal", err)
+		}
+	} else {
+		if err := json.Unmarshal(b, ifcPtr); err != nil {
+			return fnerrors.NewBadRequest("json decode", err)
+		}
 	}
 
 	if err := checkRequiredFields(ifcPtr); err != nil {
